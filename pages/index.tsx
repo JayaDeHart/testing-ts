@@ -1,65 +1,76 @@
-import Head from 'next/head'
-import Image from 'next/image'
+import Head from 'next/head';
+import Image from 'next/image';
+import React, { useState } from 'react';
+import styles from '@/pages/index.module.css';
+import TodoItem from '../components/TodoItem';
 
-import styles from '@/pages/index.module.css'
+type Todo = {
+  id: number;
+  text: string;
+  completed: boolean;
+};
 
 export default function Home() {
+  const [todoList, setTodoList] = useState<Todo[]>([]);
+  const [todoText, setTodoText] = useState('');
+
+  function addTodoItem(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const newItem: Todo = {
+      id: todoList.length + 1,
+      text: todoText,
+      completed: false,
+    };
+    console.log(newItem);
+    setTodoList([...todoList, newItem]);
+    setTodoText('');
+  }
+
+  function toggleCompleted(id: number) {
+    const newState: Todo[] = todoList.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          completed: !item.completed,
+        };
+      } else {
+        return item;
+      }
+    });
+    setTodoList(newState);
+  }
+
+  function deleteSelf(id: number) {
+    const newState = todoList.filter((item) => item.id !== id);
+
+    setTodoList(newState);
+  }
   return (
     <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing <code>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a href="https://vercel.com/new" className={styles.card}>
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
+      <div>
+        {todoList.map(({ id, text, completed }) => (
+          <TodoItem
+            key={id}
+            text={text}
+            completed={completed}
+            id={id}
+            toggleCompleted={toggleCompleted}
+            deleteSelf={deleteSelf}
+          />
+        ))}
+      </div>
+      <form onSubmit={addTodoItem}>
+        <p>Task:</p>
+        <input
+          data-testid="todo-input"
+          type="text"
+          onChange={(e) => {
+            setTodoText(e.target.value);
+          }}
+          value={todoText}
+        ></input>
+        <button type="submit">Add</button>
+      </form>
     </div>
-  )
+  );
 }
